@@ -1,0 +1,9 @@
+export 'sign_in_page.dart';
+export 'log_in_page.dart';
+export 'home_page.dart';
+export 'settings_page.dart';
+export 'profile_page.dart';
+export 'ranking_page.dart';
+export 'instructions_page.dart';
+export 'game_page.dart';
+export 'chat_page.dart';
