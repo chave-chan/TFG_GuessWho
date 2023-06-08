@@ -133,12 +133,18 @@ class ApplicationDAO implements IApplicationDAO {
   Future<void> addGame(Game game) async {
     ParseObject parsePlayer1 = ParseObject('User')..objectId = game.player1Id;
     ParseObject parsePlayer2 = ParseObject('User')..objectId = game.player2Id;
+    ParseObject parseCharacter1 = ParseObject('Character')
+      ..objectId = game.character1Id;
+    ParseObject parseCharacter2 = ParseObject('Character')
+      ..objectId = game.character2Id;
 
     try {
       final ParseObject newGame = ParseObject('Game')
         ..set('type', game.getType())
         ..set('player1', parsePlayer1)
-        ..set('Player2', parsePlayer2);
+        ..set('Player2', parsePlayer2)
+        ..set('character_p1', parseCharacter1)
+        ..set('character_p2', parseCharacter2);
       await newGame.save();
     } catch (e) {
       print('Error adding game');
@@ -153,8 +159,6 @@ class ApplicationDAO implements IApplicationDAO {
     try {
       final ParseObject updatedGame = ParseObject('Game')
         ..objectId = id
-        //..set('character_p1', game.getCharacter1())
-        //..set('character_p2', game.getCharacter2())
         ..set('winner', parsePlayer);
       await updatedGame.save();
     } catch (e) {
@@ -193,21 +197,20 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
-  Future<Map<ParseUser, int>> getRanking() async {
+  Future<Map<String, int>> getRanking() async {
     Map<String, int> winsPerPlayer = await getWinsPerPlayer();
     Map<String, int> ranking = sortRanking(winsPerPlayer);
-    
+
     if (ranking.isNotEmpty) {
-      Map<ParseUser, int> userRanking = {};
+      Map<String, int> userRanking = {};
 
       for (var entry in ranking.entries) {
-        ParseUser? user = await getUserFromObjectId(entry.key);
-        if (user != null) {
-          userRanking[user] = entry.value;
+        String? username = await getUsernameFromObjectId(entry.key);
+
+        if (username != null) {
+          userRanking[username] = entry.value;
         }
-        print('USER: $user');
       }
-      print('USER RANKING: $userRanking');
       return userRanking;
     } else {
       print('Ranking is empty');
@@ -217,11 +220,12 @@ class ApplicationDAO implements IApplicationDAO {
 
   @override
   Future<int> getRank(String playerId) async {
-    Map<ParseUser, int> ranking = await getRanking();
+    Map<String, int> ranking = await getRanking();
     int position = 0;
-    for (var user in ranking.keys) {
+    for (var username in ranking.keys) {
+      String? objectId = await getObjectIdFromUsername(username);
       position++;
-      if (user.objectId == playerId) {
+      if (objectId == playerId) {
         return position;
       }
     }
@@ -272,17 +276,27 @@ class ApplicationDAO implements IApplicationDAO {
     }
   }
 
-  Future<ParseUser?> getUserFromObjectId(String objectId) async {
-    QueryBuilder<ParseObject> queryUser =
-        QueryBuilder<ParseObject>(ParseObject('User'))
+  Future<String?> getUsernameFromObjectId(String objectId) async {
+    QueryBuilder<ParseUser> queryUser =
+        QueryBuilder<ParseUser>(ParseUser.forQuery())
           ..whereEqualTo('objectId', objectId);
-
     var response = await queryUser.query();
-
     if (response.results != null && response.results!.isNotEmpty) {
-      return response.results!.first as ParseUser;
-    } else {
-      return null;
+      ParseUser user = response.results!.first as ParseUser;
+      return user.username;
     }
+    return null;
+  }
+
+  Future<String?> getObjectIdFromUsername(String username) async {
+    QueryBuilder<ParseUser> queryUser =
+        QueryBuilder<ParseUser>(ParseUser.forQuery())
+          ..whereEqualTo('username', username);
+    var response = await queryUser.query();
+    if (response.results != null && response.results!.isNotEmpty) {
+      ParseUser user = response.results!.first as ParseUser;
+      return user.objectId;
+    }
+    return null;
   }
 }

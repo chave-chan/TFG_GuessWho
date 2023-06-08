@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:guess_who/src/persistence/application_dao.dart';
-import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class RankingPage extends StatelessWidget {
   const RankingPage({super.key});
@@ -30,7 +29,7 @@ class RankingList extends StatefulWidget {
 
 class _RankingListState extends State<RankingList> {
   ApplicationDAO applicationDAO = ApplicationDAO();
-  late Future<Map<ParseUser, int>> futureRanking;
+  late Future<Map<String, int>> futureRanking;
 
   @override
   void initState() {
@@ -40,7 +39,7 @@ class _RankingListState extends State<RankingList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<ParseUser, int>>(
+    return FutureBuilder<Map<String, int>>(
       future: futureRanking,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -49,7 +48,7 @@ class _RankingListState extends State<RankingList> {
           return Center(child: Text('Error loading ranking'));
         } else {
           var ranking = snapshot.data!.entries
-              .map((entry) => '${entry.key.get('username')}')
+              .map((entry) => '${entry.key}')
               .toList();
           return ListView.builder(
               itemCount: ranking.length,

@@ -21,6 +21,6 @@ abstract class IApplicationDAO {
   Future<List<Character>> getCharacters();
   Future<Character> getCharacter(String id);
 
-  Future<Map<ParseUser, int>> getRanking();
+  Future<Map<String, int>> getRanking();
   Future<int> getRank(String id);
 }
