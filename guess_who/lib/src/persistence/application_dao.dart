@@ -6,6 +6,7 @@ import 'package:guess_who/src/domain/character.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class ApplicationDAO implements IApplicationDAO {
+  
   @override
   Future<bool> hasUserLogged() async {
     ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;

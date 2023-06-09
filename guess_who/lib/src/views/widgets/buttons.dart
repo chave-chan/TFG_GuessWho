@@ -6,7 +6,6 @@ import 'package:perfect_volume_control/perfect_volume_control.dart';
 /*SIGN IN PAGE*/
 
 class LogInButton extends StatelessWidget {
-  const LogInButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -104,10 +103,9 @@ class ProfileButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person, size: 28 ),
+            Icon(Icons.person, size: 28),
             SizedBox(width: 8),
-            Text('Profile',
-                style: TextStyle(fontSize: 24)),
+            Text('Profile', style: TextStyle(fontSize: 24)),
           ],
         ),
         onPressed: () {
@@ -137,10 +135,9 @@ class RankingButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.emoji_events, size: 24 ),
+            Icon(Icons.emoji_events, size: 24),
             SizedBox(width: 8),
-            Text('Ranking',
-                style: TextStyle(fontSize: 24)),
+            Text('Ranking', style: TextStyle(fontSize: 24)),
           ],
         ),
         onPressed: () {
@@ -447,10 +444,14 @@ class _GameMode1HTPButtonState extends State<GameMode1HTPButton> {
                       style: TextStyle(
                           fontSize: 18,
                           height: 1.25,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onBackground)),
                   TextSpan(
                       text: textBody,
-                      style: TextStyle(fontSize: 18, height: 1.25)),
+                      style: TextStyle(
+                          fontSize: 18,
+                          height: 1.25,
+                          color: Theme.of(context).colorScheme.onBackground)),
                 ]))
             : Container(),
       ],
@@ -504,10 +505,14 @@ class _GameMode2HTPButtonState extends State<GameMode2HTPButton> {
                       style: TextStyle(
                           fontSize: 18,
                           height: 1.25,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onBackground)),
                   TextSpan(
                       text: textBody,
-                      style: TextStyle(fontSize: 18, height: 1.25)),
+                      style: TextStyle(
+                          fontSize: 18,
+                          height: 1.25,
+                          color: Theme.of(context).colorScheme.onBackground)),
                 ]))
             : Container(),
       ],
@@ -560,10 +565,14 @@ class _GameMode3HTPButtonState extends State<GameMode3HTPButton> {
                       style: TextStyle(
                           fontSize: 18,
                           height: 1.25,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onBackground)),
                   TextSpan(
                       text: textBody,
-                      style: TextStyle(fontSize: 18, height: 1.25)),
+                      style: TextStyle(
+                          fontSize: 18,
+                          height: 1.25,
+                          color: Theme.of(context).colorScheme.onBackground)),
                 ]))
             : Container(),
       ],
