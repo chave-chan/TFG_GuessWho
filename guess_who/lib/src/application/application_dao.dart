@@ -21,6 +21,9 @@ abstract class IApplicationDAO {
   Future<List<Character>> getCharacters();
   Future<Character> getCharacter(String id);
 
+  Future<List<ParseObject>> getChatMessages(String gameId);
+  Future<void> deleteChatMessages(String gameId);
+
   Future<Map<String, int>> getRanking();
   Future<int> getRank(String id);
 }

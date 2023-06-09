@@ -198,6 +198,40 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
+  Future<List<ParseObject>> getChatMessages(String gameId) async {
+    ParseObject parseGame = ParseObject('Game')..objectId = gameId;
+    QueryBuilder<ParseObject> queryMessage =
+        QueryBuilder<ParseObject>(ParseObject('Message'))
+          ..whereEqualTo('game_id', parseGame)
+          ..orderByDescending('createdAt');
+
+    final ParseResponse apiResponse = await queryMessage.query();
+
+    if (apiResponse.success && apiResponse.results != null) {
+      return apiResponse.results as List<ParseObject>;
+    } else {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> deleteChatMessages(String gameId) async {
+  QueryBuilder<ParseObject> queryMessage =
+      QueryBuilder<ParseObject>(ParseObject('Message'))
+        ..whereEqualTo('game_id', gameId);
+
+  final ParseResponse apiResponse = await queryMessage.query();
+
+  if (apiResponse.success && apiResponse.results != null) {
+    for (ParseObject message in apiResponse.results as List<ParseObject>) {
+      await message.delete();
+    }
+  } else {
+    print('Failed to delete game messages: ${apiResponse.error?.message}');
+  }
+}
+
+  @override
   Future<Map<String, int>> getRanking() async {
     Map<String, int> winsPerPlayer = await getWinsPerPlayer();
     Map<String, int> ranking = sortRanking(winsPerPlayer);

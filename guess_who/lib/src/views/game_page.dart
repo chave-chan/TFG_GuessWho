@@ -1,11 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:guess_who/src/views/widgets/buttons.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 //import 'package:model_viewer_plus/model_viewer_plus.dart';
 
-class GamePage extends StatelessWidget {
+class GamePage extends StatefulWidget {
   GamePage({super.key});
 
-  String timer = "00:00", opponent = "Opponent's username", character = "Character's name";
+  @override
+  State<GamePage> createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  ApplicationDAO applicationDAO = ApplicationDAO();
+  ParseUser? loggedInUser;
+
+  String gameId = 'I3HD80kryN';
+  String timer = "00:00",
+      opponent = "Opponent's username",
+      character = "Character's name";
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    loggedInUser = await applicationDAO.getCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +92,9 @@ class GamePage extends StatelessWidget {
                 Text(character, style: TextStyle(fontSize: 30)),
               ],
             ),
-            //WrittingInput(),
+            Spacer(),
+            ChatButton(),
+            SizedBox(height: 40),
           ],
         ),
       ),

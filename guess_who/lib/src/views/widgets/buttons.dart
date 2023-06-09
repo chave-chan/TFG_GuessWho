@@ -6,7 +6,6 @@ import 'package:perfect_volume_control/perfect_volume_control.dart';
 /*SIGN IN PAGE*/
 
 class LogInButton extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
@@ -202,10 +201,14 @@ class GameMode1Button extends StatelessWidget {
         style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
       ),
       onPressed: () {
+        /*
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => GamePage()),
-        );
+        );*/
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Game mode not available'),
+            duration: Duration(seconds: 1)));
       },
     );
   }
@@ -582,5 +585,64 @@ class _GameMode3HTPButtonState extends State<GameMode3HTPButton> {
 
 /*GAME PAGE*/
 
-/*CHAT PAGE*/
+class ChatButton extends StatefulWidget {
+  const ChatButton({super.key});
 
+  @override
+  State<ChatButton> createState() => _ChatButtonState();
+}
+
+class _ChatButtonState extends State<ChatButton> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          builder: (BuildContext context) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.88,
+              child: ChatPage(),
+            );
+          },
+          isScrollControlled: true,
+        );
+      },
+      child: Container(
+        height: 60,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.only(left: 8, right: 14),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Color.fromARGB(255, 140, 140, 140),
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(top: 20, bottom: 14),
+                  child: Text(
+                    'Type a message...',
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Color.fromARGB(255, 172, 172, 172)),
+                  ),
+                ),
+              ),
+            ),
+            Icon(
+              Icons.send,
+              size: 36,
+              color: AppTheme.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
