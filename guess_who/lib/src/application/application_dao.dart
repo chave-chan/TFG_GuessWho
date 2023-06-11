@@ -2,6 +2,7 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 import '../domain/player.dart';
 import '../domain/game.dart';
 import '../domain/character.dart';
+import '../domain/board.dart';
 
 abstract class IApplicationDAO {
   Future<bool> hasUserLogged();
@@ -20,6 +21,9 @@ abstract class IApplicationDAO {
 
   Future<List<Character>> getCharacters();
   Future<Character> getCharacter(String id);
+
+  Future<Board> getBoard(String gameId, String playerId);
+  Future<void> updateBoard(String gameId, String playerId, List<bool> board);
 
   Future<List<ParseObject>> getChatMessages(String gameId);
   Future<void> deleteChatMessages(String gameId);

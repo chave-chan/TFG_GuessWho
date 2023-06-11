@@ -201,11 +201,6 @@ class GameMode1Button extends StatelessWidget {
         style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
       ),
       onPressed: () {
-        /*
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => GamePage()),
-        );*/
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Game mode not available'),
             duration: Duration(seconds: 1)));

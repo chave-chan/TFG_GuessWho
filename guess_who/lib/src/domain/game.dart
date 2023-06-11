@@ -1,7 +1,5 @@
 import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'player.dart';
-import 'character.dart';
 
 part 'package:guess_who/utils/JsonSerializable/gameJS.dart';
 
@@ -11,9 +9,11 @@ class Game {
   bool type; //true if public, false if private
   String id, player1Id, player2Id, character1Id, character2Id;
   String? winnerId;
-  //Player player1, player2;
-  //late Character character1, character2;
-  //late Player winner;
+  late String player1Username,
+      player2Username,
+      character1Name,
+      character2Name,
+      winnerUsername;
 
   Game({
     required this.id,
@@ -29,12 +29,23 @@ class Game {
 
   Map<String, dynamic> toJson() => _$GameToJson(this);
 
+  void getInfo() {
+    player1Username =
+        applicationDAO.getUsernameFromObjectId(player1Id) as String;
+    player2Username =
+        applicationDAO.getUsernameFromObjectId(player2Id) as String;
+    character1Name = applicationDAO.getNameFromObjectId(character1Id) as String;
+    character2Name = applicationDAO.getNameFromObjectId(character2Id) as String;
+    if (winnerId != null) {
+      winnerUsername =
+          applicationDAO.getUsernameFromObjectId(winnerId!) as String;
+    }
+  }
+
   @override
-  String toString() => 'Game(ID: $id, Player1: $player1Id, Player2: $player2Id, Winner: ${winnerId ?? 'No winner'})';
-/*
-  @override
-  String toString() => 'Game(ID: $id, Player1: ${player1.toString()} with Character: ${character1.toString()}, Player2: ${player2.toString()} with Character: ${character2.toString()})';
-*/
+  String toString() =>
+      'Game(ID: $id, Player1: $player1Username with character $character1Name, Player2: $player2Username with character $character2Name, Winner: $winnerUsername)';
+
   String getId() => id;
   bool getType() => type;
   String getPlayer1Id() => player1Id;

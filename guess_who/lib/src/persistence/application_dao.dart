@@ -3,10 +3,10 @@ import 'package:guess_who/src/application/exceptions/exceptions.dart';
 import 'package:guess_who/src/domain/player.dart';
 import 'package:guess_who/src/domain/game.dart';
 import 'package:guess_who/src/domain/character.dart';
+import 'package:guess_who/src/domain/board.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class ApplicationDAO implements IApplicationDAO {
-  
   @override
   Future<bool> hasUserLogged() async {
     ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
@@ -198,8 +198,59 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
+  Future<Board> getBoard(String gameId, String playerId) async {
+    ParseObject parseGame = ParseObject('Game')..objectId = gameId;
+    ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
+
+    QueryBuilder<ParseObject> queryBoard =
+        QueryBuilder<ParseObject>(ParseObject('Board'))
+          ..whereEqualTo('game_id', parseGame)
+          ..whereEqualTo('player_id', parsePlayer);
+
+    final ParseResponse apiResponse = await queryBoard.query();
+
+    try {
+      final Board board = Board.fromJson(apiResponse.results![0].toJson());
+      return board;
+    } catch (e) {
+      print('Board with gameId $gameId and playerId $playerId not found');
+      throw BoardNotFoundException(
+          'Board with gameId $gameId and playerId $playerId not found');
+    }
+  }
+
+  @override
+  Future<void> updateBoard(
+      String gameId, String playerId, List<bool> board) async {
+    ParseObject parseGame = ParseObject('Game')..objectId = gameId;
+    ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
+
+    QueryBuilder<ParseObject> queryBoard =
+        QueryBuilder<ParseObject>(ParseObject('Board'))
+          ..whereEqualTo('game_id', parseGame)
+          ..whereEqualTo('player_id', parsePlayer);
+
+    final ParseResponse apiResponse = await queryBoard.query();
+
+    if (apiResponse.results != null && apiResponse.results!.isNotEmpty) {
+      ParseObject boardToUpdate = apiResponse.results!.first;
+
+      for (int i = 0; i < board.length; i++) {
+        boardToUpdate.set('ch$i', board[i]);
+      }
+
+      await boardToUpdate.save();
+    } else {
+      print('Board with gameId $gameId and playerId $playerId not found');
+      throw BoardNotFoundException(
+          'Board with gameId $gameId and playerId $playerId not found');
+    }
+  }
+
+  @override
   Future<List<ParseObject>> getChatMessages(String gameId) async {
     ParseObject parseGame = ParseObject('Game')..objectId = gameId;
+
     QueryBuilder<ParseObject> queryMessage =
         QueryBuilder<ParseObject>(ParseObject('Message'))
           ..whereEqualTo('game_id', parseGame)
@@ -216,29 +267,29 @@ class ApplicationDAO implements IApplicationDAO {
 
   @override
   Future<void> deleteChatMessages(String gameId) async {
-  QueryBuilder<ParseObject> queryMessage =
-      QueryBuilder<ParseObject>(ParseObject('Message'))
-        ..whereEqualTo('game_id', gameId);
-
-  final ParseResponse apiResponse = await queryMessage.query();
-
-  if (apiResponse.success && apiResponse.results != null) {
-    for (ParseObject message in apiResponse.results as List<ParseObject>) {
-      await message.delete();
+    QueryBuilder<ParseObject> queryMessage =
+        QueryBuilder<ParseObject>(ParseObject('Message'))
+          ..whereEqualTo('game_id', gameId);
+    
+    final ParseResponse apiResponse = await queryMessage.query();
+    
+    if (apiResponse.success && apiResponse.results != null) {
+      for (ParseObject message in apiResponse.results as List<ParseObject>) {
+        await message.delete();
+      }
+    } else {
+      print('Failed to delete game messages: ${apiResponse.error?.message}');
     }
-  } else {
-    print('Failed to delete game messages: ${apiResponse.error?.message}');
   }
-}
 
   @override
   Future<Map<String, int>> getRanking() async {
     Map<String, int> winsPerPlayer = await getWinsPerPlayer();
     Map<String, int> ranking = sortRanking(winsPerPlayer);
-
+    
     if (ranking.isNotEmpty) {
       Map<String, int> userRanking = {};
-
+      
       for (var entry in ranking.entries) {
         String? username = await getUsernameFromObjectId(entry.key);
 
@@ -257,9 +308,11 @@ class ApplicationDAO implements IApplicationDAO {
   Future<int> getRank(String playerId) async {
     Map<String, int> ranking = await getRanking();
     int position = 0;
+    
     for (var username in ranking.keys) {
       String? objectId = await getObjectIdFromUsername(username);
       position++;
+      
       if (objectId == playerId) {
         return position;
       }
@@ -272,19 +325,20 @@ class ApplicationDAO implements IApplicationDAO {
         QueryBuilder<ParseObject>(ParseObject('Game'))
           ..whereEqualTo('type', true)
           ..orderByDescending('createdAt');
-
+    
     var apiResponse = await queryGames.query();
-
+    
     try {
       final List<Game> games = (apiResponse.results ?? [])
           .map((game) => Game.fromJson(game.toJson()))
           .toList();
-
+      
       Map<String, int> winsPerPlayer = {};
-
+      
       for (var game in games) {
         if (game.winnerId != null) {
           String winnerId = game.winnerId!;
+          
           if (!winsPerPlayer.containsKey(winnerId)) {
             winsPerPlayer[winnerId] = 1;
           } else {
@@ -315,7 +369,9 @@ class ApplicationDAO implements IApplicationDAO {
     QueryBuilder<ParseUser> queryUser =
         QueryBuilder<ParseUser>(ParseUser.forQuery())
           ..whereEqualTo('objectId', objectId);
+    
     var response = await queryUser.query();
+    
     if (response.results != null && response.results!.isNotEmpty) {
       ParseUser user = response.results!.first as ParseUser;
       return user.username;
@@ -327,10 +383,26 @@ class ApplicationDAO implements IApplicationDAO {
     QueryBuilder<ParseUser> queryUser =
         QueryBuilder<ParseUser>(ParseUser.forQuery())
           ..whereEqualTo('username', username);
+    
     var response = await queryUser.query();
+    
     if (response.results != null && response.results!.isNotEmpty) {
       ParseUser user = response.results!.first as ParseUser;
       return user.objectId;
+    }
+    return null;
+  }
+
+  Future<String?> getNameFromObjectId(String objectId) async {
+    QueryBuilder<ParseObject> queryCharacter =
+        QueryBuilder<ParseObject>(ParseObject('Character'))
+          ..whereEqualTo('objectId', objectId);
+
+    var response = await queryCharacter.query();
+
+    if (response.results != null && response.results!.isNotEmpty) {
+      ParseObject character = response.results!.first;
+      return character.get('name');
     }
     return null;
   }

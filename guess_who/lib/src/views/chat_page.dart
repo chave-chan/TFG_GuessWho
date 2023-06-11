@@ -15,7 +15,7 @@ class _ChatPageState extends State<ChatPage> {
   final messageTextController = TextEditingController();
   ParseUser? loggedInUser;
   String? messageText;
-  bool isUserTurn = true;
+  bool isUserTurn = false;
 
   String gameId = 'I3HD80kryN';
   String timer = '00:00';
@@ -176,7 +176,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> sendMessage() async {
-    ParseObject parseGame = ParseObject('Game')..objectId = gameId;
     final String messageText = messageTextController.text.trim();
     if (messageText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -187,7 +186,7 @@ class _ChatPageState extends State<ChatPage> {
       return;
     }
     final messageToSave = ParseObject('Message')
-      ..set('game_id',parseGame)
+      ..set('game_id', ParseObject('Game')..objectId = gameId)
       ..set<String>('text', messageTextController.text)
       ..set<String>('sender', loggedInUser!.username!);
     await messageToSave.save();
@@ -197,6 +196,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> sendYesNoMessage(String answer) async {
     final messageToSave = ParseObject('Message')
+      ..set('game_id', ParseObject('Game')..objectId = gameId)
       ..set<String>('text', answer)
       ..set<String>('sender', loggedInUser!.username!);
     await messageToSave.save();
