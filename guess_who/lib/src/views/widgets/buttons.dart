@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:guess_who/src/domain/game.dart';
 import 'package:guess_who/utils/theme.dart';
 import 'package:guess_who/src/views/pages.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
@@ -182,6 +186,68 @@ class InstructionsButton extends StatelessWidget {
   }
 }
 
+class DialogContent extends StatefulWidget {
+  final CancelableOperation<Game?> searchGameOperation;
+
+  DialogContent(this.searchGameOperation);
+
+  @override
+  _DialogContentState createState() => _DialogContentState();
+}
+
+class _DialogContentState extends State<DialogContent> {
+  String message = '\nSearching for an opponent...';
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.searchGameOperation.value.then((game) {
+      if (game != null) {
+        setState(() {
+          message = '\nGame found, redirecting...';
+        });
+      } else {
+        Timer(Duration(seconds: 5), () {
+          setState(() {
+          message = 'No available players right now.\nTry again later';
+        });
+        });
+      }
+    }).catchError((error) {
+      setState(() {
+        message = error.toString();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(),
+        SizedBox(height: 24),
+        Text(message, textAlign: TextAlign.center),
+        SizedBox(height: 16),
+        ElevatedButton(
+          child: Text('Cancel'),
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {
+            widget.searchGameOperation.cancel();
+            Navigator.pop(context);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/*
 class GameMode1Button extends StatelessWidget {
   const GameMode1Button({super.key});
 
@@ -264,6 +330,7 @@ class GameMode3Button extends StatelessWidget {
     );
   }
 }
+*/
 
 /*SETTINGS PAGE*/
 
@@ -419,7 +486,7 @@ class _GameMode1HTPButtonState extends State<GameMode1HTPButton> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            backgroundColor: AppTheme.gameMode1,
+            backgroundColor: AppTheme.gameMode3,
             minimumSize: Size(double.maxFinite, 80),
           ),
           child: Text(
@@ -480,7 +547,7 @@ class _GameMode2HTPButtonState extends State<GameMode2HTPButton> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            backgroundColor: AppTheme.gameMode2,
+            backgroundColor: AppTheme.gameMode1,
             minimumSize: Size(double.maxFinite, 80),
           ),
           child: Text(
@@ -540,7 +607,7 @@ class _GameMode3HTPButtonState extends State<GameMode3HTPButton> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            backgroundColor: AppTheme.gameMode3,
+            backgroundColor: AppTheme.gameMode2,
             minimumSize: Size(double.maxFinite, 80),
           ),
           child: Text(

@@ -103,6 +103,64 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
+  Future<void> setSeekingGame(String playerId, bool isSeekingGame) async {
+    try {
+      final ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
+      parsePlayer.set('isSeekingGame', isSeekingGame);
+      await parsePlayer.save();
+    } catch (e) {
+      print('Error setting seeking game for player with id $playerId');
+      throw PlayerUpdateException(
+          'Error setting seeking game for player with id $playerId');
+    }
+  }
+
+  @override
+  Future<Game?> seekGame(String playerId, bool type) async {
+    await setSeekingGame(playerId, true);
+
+    QueryBuilder<ParseObject> queryPlayers =
+        QueryBuilder<ParseObject>(ParseObject('User'))
+          ..whereEqualTo('isSeekingGame', true)
+          ..whereNotEqualTo('objectId', playerId);
+
+    final ParseResponse apiResponse = await queryPlayers.query();
+
+    if (apiResponse.results == null || apiResponse.results!.isEmpty) {
+      print('No available players seeking game');
+      return null;
+    }
+
+    try {
+      final Player otherPlayer =
+          Player.fromJson(apiResponse.results![0].toJson());
+
+      final List<Character> allCharacters = await getCharacters();
+      allCharacters.shuffle();
+      final character1 = allCharacters[0];
+      final character2 = allCharacters[1];
+
+      final Game newGame = Game(
+          id: '',
+          type: type,
+          player1Id: playerId,
+          player2Id: otherPlayer.getId(),
+          character1Id: character1.getId(),
+          character2Id: character2.getId());
+      await addGame(newGame);
+
+      await setSeekingGame(playerId, false);
+      await setSeekingGame(otherPlayer.getId(), false);
+
+      return newGame;
+    } catch (e) {
+      print('Error seeking game for player with id $playerId');
+      throw MatchmakingException(
+          'Error seeking game for player with id $playerId');
+    }
+  }
+
+  @override
   Future<List<Game>> getGames() async {
     final apiResponse = await ParseObject('Game').getAll();
 
@@ -270,9 +328,9 @@ class ApplicationDAO implements IApplicationDAO {
     QueryBuilder<ParseObject> queryMessage =
         QueryBuilder<ParseObject>(ParseObject('Message'))
           ..whereEqualTo('game_id', gameId);
-    
+
     final ParseResponse apiResponse = await queryMessage.query();
-    
+
     if (apiResponse.success && apiResponse.results != null) {
       for (ParseObject message in apiResponse.results as List<ParseObject>) {
         await message.delete();
@@ -286,10 +344,10 @@ class ApplicationDAO implements IApplicationDAO {
   Future<Map<String, int>> getRanking() async {
     Map<String, int> winsPerPlayer = await getWinsPerPlayer();
     Map<String, int> ranking = sortRanking(winsPerPlayer);
-    
+
     if (ranking.isNotEmpty) {
       Map<String, int> userRanking = {};
-      
+
       for (var entry in ranking.entries) {
         String? username = await getUsernameFromObjectId(entry.key);
 
@@ -308,11 +366,11 @@ class ApplicationDAO implements IApplicationDAO {
   Future<int> getRank(String playerId) async {
     Map<String, int> ranking = await getRanking();
     int position = 0;
-    
+
     for (var username in ranking.keys) {
       String? objectId = await getObjectIdFromUsername(username);
       position++;
-      
+
       if (objectId == playerId) {
         return position;
       }
@@ -325,20 +383,20 @@ class ApplicationDAO implements IApplicationDAO {
         QueryBuilder<ParseObject>(ParseObject('Game'))
           ..whereEqualTo('type', true)
           ..orderByDescending('createdAt');
-    
+
     var apiResponse = await queryGames.query();
-    
+
     try {
       final List<Game> games = (apiResponse.results ?? [])
           .map((game) => Game.fromJson(game.toJson()))
           .toList();
-      
+
       Map<String, int> winsPerPlayer = {};
-      
+
       for (var game in games) {
         if (game.winnerId != null) {
           String winnerId = game.winnerId!;
-          
+
           if (!winsPerPlayer.containsKey(winnerId)) {
             winsPerPlayer[winnerId] = 1;
           } else {
@@ -369,9 +427,9 @@ class ApplicationDAO implements IApplicationDAO {
     QueryBuilder<ParseUser> queryUser =
         QueryBuilder<ParseUser>(ParseUser.forQuery())
           ..whereEqualTo('objectId', objectId);
-    
+
     var response = await queryUser.query();
-    
+
     if (response.results != null && response.results!.isNotEmpty) {
       ParseUser user = response.results!.first as ParseUser;
       return user.username;
@@ -383,9 +441,9 @@ class ApplicationDAO implements IApplicationDAO {
     QueryBuilder<ParseUser> queryUser =
         QueryBuilder<ParseUser>(ParseUser.forQuery())
           ..whereEqualTo('username', username);
-    
+
     var response = await queryUser.query();
-    
+
     if (response.results != null && response.results!.isNotEmpty) {
       ParseUser user = response.results!.first as ParseUser;
       return user.objectId;

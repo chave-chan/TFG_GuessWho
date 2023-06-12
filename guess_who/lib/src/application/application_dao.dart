@@ -14,6 +14,9 @@ abstract class IApplicationDAO {
   Future<int> getPlayerWins(String id);
   Future<void> deletePlayer(String id);
 
+  Future<void> setSeekingGame(String playerId, bool isSeekingGame);
+  Future<Game?> seekGame(String playerId, bool type);
+
   Future<List<Game>> getGames();
   Future<Game> getGame(String id);
   Future<void> addGame(Game game);

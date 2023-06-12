@@ -20,11 +20,11 @@ class InstructionsPage extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.vertical,
             children: [
-              GameMode1HTPButton(),
-              SizedBox(width: 16),
               GameMode2HTPButton(),
               SizedBox(width: 16),
               GameMode3HTPButton(),
+              SizedBox(width: 16),
+              GameMode1HTPButton(),
               SizedBox(width: 16),
               Text("[1] Public games affect the global ranking.\n[2] Private games do not affect the global ranking."),
             ],

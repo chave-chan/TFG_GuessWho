@@ -1,12 +1,14 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:guess_who/src/domain/game.dart';
 import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:guess_who/src/views/widgets/buttons.dart';
+import 'package:guess_who/utils/theme.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class GamePage extends StatefulWidget {
-  GamePage({super.key});
+  final Game game;
+  GamePage({required this.game, super.key});
 
   @override
   State<GamePage> createState() => _GamePageState();
@@ -15,6 +17,7 @@ class GamePage extends StatefulWidget {
 class _GamePageState extends State<GamePage> {
   ApplicationDAO applicationDAO = ApplicationDAO();
   ParseUser? loggedInUser;
+  bool isUserTurn = true;
 
   String gameId = 'I3HD80kryN';
   String timer = "00:00",
@@ -25,6 +28,9 @@ class _GamePageState extends State<GamePage> {
   void initState() {
     super.initState();
     getCurrentUser();
+    //gameId = widget.game.getId();
+    //opponent = applicationDAO.getUsernameFromObjectId(widget.game.getPlayer2Id()) as String;
+    //character = widget.game.getCharacter1Id();
   }
 
   void getCurrentUser() async {
@@ -35,8 +41,33 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(timer, style: TextStyle(fontSize: 30)),
-        iconTheme: IconThemeData(size: 32),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            BackButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            Spacer(),
+            Text(timer,
+                style: TextStyle(
+                    fontSize: 30,
+                    color:
+                        isUserTurn ? AppTheme.gameMode1 : AppTheme.gameMode3)),
+            Spacer(),
+            IconButton(
+                onPressed: () {
+                  isUserTurn = !isUserTurn;
+                },
+                icon: Icon(Icons.change_circle,
+                    size: 40, color: Theme.of(context).colorScheme.primary)),
+          ],
+        ),
+        iconTheme: IconThemeData(
+          size: 32,
+        ),
         backgroundColor: Theme.of(context).colorScheme.background,
       ),
       body: Padding(

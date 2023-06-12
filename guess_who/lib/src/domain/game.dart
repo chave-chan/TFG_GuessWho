@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -15,6 +17,8 @@ class Game {
       character2Name,
       winnerUsername;
 
+  bool player1Turn;
+
   Game({
     required this.id,
     required this.type,
@@ -23,11 +27,13 @@ class Game {
     required this.character1Id,
     required this.character2Id,
     this.winnerId,
-  });
+  }) : player1Turn = Random().nextBool();
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);
 
   Map<String, dynamic> toJson() => _$GameToJson(this);
+
+  void switchTurn() => player1Turn = !player1Turn;
 
   void getInfo() {
     player1Username =

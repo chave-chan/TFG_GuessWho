@@ -15,10 +15,9 @@ class _ChatPageState extends State<ChatPage> {
   final messageTextController = TextEditingController();
   ParseUser? loggedInUser;
   String? messageText;
-  bool isUserTurn = false;
+  bool isUserTurn = true;
 
   String gameId = 'I3HD80kryN';
-  String timer = '00:00';
 
   @override
   void initState() {
@@ -202,5 +201,4 @@ class _ChatPageState extends State<ChatPage> {
     await messageToSave.save();
     setState(() {});
   }
-
 }
