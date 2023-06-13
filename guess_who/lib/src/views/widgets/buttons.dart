@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:guess_who/src/domain/game.dart';
@@ -210,8 +209,8 @@ class _DialogContentState extends State<DialogContent> {
       } else {
         Timer(Duration(seconds: 5), () {
           setState(() {
-          message = 'No available players right now.\nTry again later';
-        });
+            message = 'No available players right now.\nTry again later';
+          });
         });
       }
     }).catchError((error) {
@@ -677,7 +676,7 @@ class _ChatButtonState extends State<ChatButton> {
           children: <Widget>[
             Expanded(
               child: Container(
-                margin: EdgeInsets.only(left: 8, right: 14),
+                margin: EdgeInsets.only(left: 16, right: 14),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -702,6 +701,7 @@ class _ChatButtonState extends State<ChatButton> {
               size: 36,
               color: AppTheme.primary,
             ),
+            SizedBox(width: 4),
           ],
         ),
       ),

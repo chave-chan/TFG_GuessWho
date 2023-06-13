@@ -15,16 +15,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  CancelableOperation<Game?>? searchGameOperation;
   ApplicationDAO applicationDAO = ApplicationDAO();
+  CancelableOperation<Game?>? searchGameOperation;
   ParseUser? loggedInUser;
   bool isWaiting = false;
   String message = '';
+
+  late Game testGame;
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
+    getTestGame();
+  }
+
+  void getTestGame() async {
+    testGame = await applicationDAO.getGame('I3HD80kryN');
   }
 
   void getCurrentUser() async {
@@ -178,9 +185,16 @@ class _HomePageState extends State<HomePage> {
                           TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
+                      /*
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text('Game mode not available'),
                           duration: Duration(seconds: 1)));
+                      */
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => GamePage(game: testGame)),
+                      );
                     },
                   ),
                   SizedBox(width: 72),

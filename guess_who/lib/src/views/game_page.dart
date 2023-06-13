@@ -19,22 +19,70 @@ class _GamePageState extends State<GamePage> {
   ParseUser? loggedInUser;
   bool isUserTurn = true;
 
-  String gameId = 'I3HD80kryN';
-  String timer = "00:00",
-      opponent = "Opponent's username",
-      character = "Character's name";
+  late String gameId, otherPlayer, character;
+  String timer = "00:00";
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
-    //gameId = widget.game.getId();
-    //opponent = applicationDAO.getUsernameFromObjectId(widget.game.getPlayer2Id()) as String;
-    //character = widget.game.getCharacter1Id();
+    gameId = widget.game.getId();
+    otherPlayer = widget.game.getPlayer2Id();
+    character = widget.game.getCharacter1Id();
   }
 
   void getCurrentUser() async {
     loggedInUser = await applicationDAO.getCurrentUser();
+  }
+
+  Future<void> _showCharacterDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.expand_more, size: 48, color: AppTheme.primary),
+                  Text('Hide characters',
+                      style: TextStyle(fontSize: 16, color: AppTheme.primary))
+                ]),
+              ),
+            ],
+          ),
+          content: Container(
+            height: MediaQuery.of(context).size.height * 0.4,
+            width: double.maxFinite,
+            child: GridView.count(
+              crossAxisCount: 4,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              childAspectRatio: 0.8,
+              physics: NeverScrollableScrollPhysics(),
+              children: List.generate(
+                16,
+                (index) => ElevatedButton(
+                  onPressed: () {
+                    // Realizar acción al seleccionar un botón
+                  },
+                  child: Image.asset(
+                    'lib/assets/images/Bill.jpg',
+                    height: 96 * 0.8,
+                    width: 64 * 0.8,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -51,18 +99,18 @@ class _GamePageState extends State<GamePage> {
               },
             ),
             Spacer(),
-            Text(timer,
-                style: TextStyle(
-                    fontSize: 30,
-                    color:
-                        isUserTurn ? AppTheme.gameMode1 : AppTheme.gameMode3)),
+            Text(timer, style: TextStyle(fontSize: 30)),
             Spacer(),
             IconButton(
                 onPressed: () {
-                  isUserTurn = !isUserTurn;
+                  setState(() {
+                    isUserTurn = !isUserTurn;
+                  });
                 },
                 icon: Icon(Icons.change_circle,
-                    size: 40, color: Theme.of(context).colorScheme.primary)),
+                    size: 40,
+                    color:
+                        isUserTurn ? AppTheme.gameMode1 : AppTheme.gameMode3)),
           ],
         ),
         iconTheme: IconThemeData(
@@ -71,7 +119,7 @@ class _GamePageState extends State<GamePage> {
         backgroundColor: Theme.of(context).colorScheme.background,
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 32, 16, 0),
+        padding: const EdgeInsets.fromLTRB(8, 32, 8, 0),
         child: Column(
           children: [
             SizedBox(
@@ -80,6 +128,8 @@ class _GamePageState extends State<GamePage> {
               child: Stack(
                 alignment: AlignmentDirectional.topCenter,
                 children: <Widget>[
+                  Container(
+                      child: Text(otherPlayer, style: TextStyle(fontSize: 28))),
                   Positioned(
                     child: Container(
                       width: 200,
@@ -95,13 +145,11 @@ class _GamePageState extends State<GamePage> {
                       ),
                     ),
                   ),
-                  Container(
-                      child: Text(opponent, style: TextStyle(fontSize: 24))),
                   Positioned(
                     top: 140,
                     child: Container(
-                      width: 400,
-                      height: 400,
+                      width: 380,
+                      height: 380,
                       child: ModelViewer(
                         src: 'lib/assets/models/blueBoard.glb',
                         alt: "Blue Board",
@@ -109,6 +157,9 @@ class _GamePageState extends State<GamePage> {
                         maxCameraOrbit: '90deg 90deg 0deg',
                         autoRotate: false,
                         autoPlay: false,
+                        disablePan: true,
+                        disableTap: true,
+                        disableZoom: true,
                         loading: Loading.eager,
                       ),
                     ),
@@ -116,17 +167,35 @@ class _GamePageState extends State<GamePage> {
                 ],
               ),
             ),
-            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset('lib/assets/images/Bill.jpg',
-                    height: 96, width: 64),
+                    height: 96 * 0.8, width: 64 * 0.8),
                 SizedBox(width: 16),
-                Text(character, style: TextStyle(fontSize: 30)),
+                Text(character, style: TextStyle(fontSize: 28)),
               ],
             ),
             Spacer(),
+            GestureDetector(
+              onTap: () {
+                _showCharacterDialog();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: AppTheme.primary),
+                  ),
+                ),
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.expand_less, size: 48, color: AppTheme.primary),
+                  Text('Show characters',
+                      style: TextStyle(fontSize: 16, color: AppTheme.primary))
+                ]),
+              ),
+            ),
+            SizedBox(height: 8),
             ChatButton(),
             SizedBox(height: 40),
           ],

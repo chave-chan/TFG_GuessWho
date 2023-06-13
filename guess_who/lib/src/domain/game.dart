@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:math';
-
 import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -11,12 +11,10 @@ class Game {
   bool type; //true if public, false if private
   String id, player1Id, player2Id, character1Id, character2Id;
   String? winnerId;
-  late String player1Username,
-      player2Username,
-      character1Name,
-      character2Name,
-      winnerUsername;
+  late String player1Username, player2Username, character1Name, character2Name, winnerUsername;
 
+  late List<bool> board;
+  Timer? timer;
   bool player1Turn;
 
   Game({
@@ -33,7 +31,25 @@ class Game {
 
   Map<String, dynamic> toJson() => _$GameToJson(this);
 
-  void switchTurn() => player1Turn = !player1Turn;
+  Future<void> updateBoard() async {
+    await applicationDAO.updateBoard(id, player1Turn ? player1Id : player2Id, board);
+  }
+
+  void startTurn() {
+    timer?.cancel();
+    timer = Timer(Duration(minutes: 1), endTurn);
+  }
+
+  void endTurn() {
+    updateBoard();
+    switchTurn();
+    timer?.cancel();
+  }
+
+  void switchTurn() {
+    player1Turn = !player1Turn;
+    startTurn();
+  }
 
   void getInfo() {
     player1Username =
