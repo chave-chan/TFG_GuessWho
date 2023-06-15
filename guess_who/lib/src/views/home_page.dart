@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(builder: (context) => GamePage(game: game)),
         );
       } else {
+        cancelGameSearch();
         Future.delayed(Duration(seconds: 10), () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
@@ -70,6 +71,7 @@ class _HomePageState extends State<HomePage> {
         });
       }
     }).catchError((error) {
+      cancelGameSearch();
       Future.delayed(Duration(seconds: 10), () {
         if (Navigator.canPop(context)) {
           Navigator.pop(context); // Close the dialog

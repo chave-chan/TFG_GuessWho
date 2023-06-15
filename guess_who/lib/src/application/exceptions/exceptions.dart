@@ -7,5 +7,6 @@ export 'game_create_exception.dart';
 export 'game_update_exception.dart';
 export 'character_not_found_exception.dart';
 export 'board_not_found_exception.dart';
+export 'board_create_exception.dart';
 export 'ranking_exception.dart';
 export 'matchmaking_exception.dart';

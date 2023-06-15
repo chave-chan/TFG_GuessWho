@@ -2,16 +2,16 @@ part of 'package:guess_who/src/domain/board.dart';
 
 Board _$BoardFromJson(Map<String, dynamic> json) {
   return Board(
-    gameId: json['gameId'] as String,
-    playerId: json['playerId'] as String,
+    gameId: json['game_id']['objectId'] as String,
+    playerId: json['player_id']['objectId'] as String,
     board: List<bool>.generate(16, (index) => json['ch$index'] as bool),
   );
 }
 
 Map<String, dynamic> _$BoardToJson(Board instance) {
   final data = <String, dynamic>{
-    'gameId': instance.gameId,
-    'playerId': instance.playerId,
+    'game_id': instance.gameId,
+    'player_id': instance.playerId,
   };
 
   for (var i = 0; i < instance.board.length; i++) {

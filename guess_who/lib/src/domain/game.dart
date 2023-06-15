@@ -11,10 +11,13 @@ class Game {
   bool type; //true if public, false if private
   String id, player1Id, player2Id, character1Id, character2Id;
   String? winnerId;
-  late String player1Username, player2Username, character1Name, character2Name, winnerUsername;
+  String player1Username = '', player2Username = '', character1Name = '', character2Name = '', winnerUsername = '';
+  int character1Index = -1, character2Index = -1;
 
-  late List<bool> board;
+  List<bool> board = List.filled(16, true);
   Timer? timer;
+  StreamController<Duration> timerController = StreamController<Duration>.broadcast();
+  StreamController<bool> turnController = StreamController<bool>.broadcast();
   bool player1Turn;
 
   Game({
@@ -31,37 +34,63 @@ class Game {
 
   Map<String, dynamic> toJson() => _$GameToJson(this);
 
+  @override
+  void dispose() {
+    timerController.close();
+    turnController.close();
+  }
+
   Future<void> updateBoard() async {
     await applicationDAO.updateBoard(id, player1Turn ? player1Id : player2Id, board);
   }
 
   void startTurn() {
+    const oneSec = Duration(seconds: 1);
+    int secondsRemaining = 60;
+
     timer?.cancel();
-    timer = Timer(Duration(minutes: 1), endTurn);
+    timer = Timer.periodic(oneSec, (Timer t) {
+      secondsRemaining--;
+      timerController.add(Duration(seconds: secondsRemaining));
+
+      if (secondsRemaining <= 0) {
+        t.cancel();
+        endTurn();
+      }
+    });
   }
 
   void endTurn() {
     updateBoard();
-    switchTurn();
     timer?.cancel();
+    switchTurn();
+    startTurn();
   }
 
   void switchTurn() {
     player1Turn = !player1Turn;
-    startTurn();
+    turnController.add(player1Turn);
   }
 
-  void getInfo() {
+  Future<void> getInfo() async {
     player1Username =
-        applicationDAO.getUsernameFromObjectId(player1Id) as String;
+        (await applicationDAO.getUsernameFromObjectId(player1Id))!;
     player2Username =
-        applicationDAO.getUsernameFromObjectId(player2Id) as String;
-    character1Name = applicationDAO.getNameFromObjectId(character1Id) as String;
-    character2Name = applicationDAO.getNameFromObjectId(character2Id) as String;
+        (await applicationDAO.getUsernameFromObjectId(player2Id))!;
+    character1Name = (await applicationDAO.getNameFromObjectId(character1Id))!;
+    character1Index = (await applicationDAO.getCharacterIndexFromObjectId(character1Id))!;
+    character2Name = (await applicationDAO.getNameFromObjectId(character2Id))!;
+    character2Index = (await applicationDAO.getCharacterIndexFromObjectId(character2Id))!;
     if (winnerId != null) {
       winnerUsername =
-          applicationDAO.getUsernameFromObjectId(winnerId!) as String;
+          (await applicationDAO.getUsernameFromObjectId(winnerId!))!;
     }
+  }
+
+  void endGame(String winnerId) {
+    timer?.cancel();
+    this.winnerId = winnerId;
+    dispose();
   }
 
   @override
@@ -71,10 +100,17 @@ class Game {
   String getId() => id;
   bool getType() => type;
   String getPlayer1Id() => player1Id;
+  String getPlayer1Username() => player1Username;
   String getPlayer2Id() => player2Id;
+  String getPlayer2Username() => player2Username;
   String getCharacter1Id() => character1Id;
+  String getCharacter1Name() => character1Name;
+  int getCharacter1Index() => character1Index;
   String getCharacter2Id() => character2Id;
+  String getCharacter2Name() => character2Name;
+  int getCharacter2Index() => character2Index;
   String? getWinnerId() => winnerId;
+  String? getWinnerUsername() => winnerUsername;
 
   setId(String id) => this.id = id;
   setType(bool type) => this.type = type;

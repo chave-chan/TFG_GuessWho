@@ -15,18 +15,20 @@ abstract class IApplicationDAO {
   Future<void> deletePlayer(String id);
 
   Future<void> setSeekingGame(String playerId, bool isSeekingGame);
-  Future<Game?> seekGame(String playerId, bool type);
+  Future<Game?> seekGame(String playerId, bool type, {Stream<bool>? cancellationToken});
 
   Future<List<Game>> getGames();
   Future<Game> getGame(String id);
-  Future<void> addGame(Game game);
-  Future<void> updateGame(String id, Player player);
+  Future<Game> addGame(Game game);
+  Future<void> updateGame(String id, String playerId);
 
   Future<List<Character>> getCharacters();
   Future<Character> getCharacter(String id);
 
+  Future<void> addBoard(Board board);
   Future<Board> getBoard(String gameId, String playerId);
   Future<void> updateBoard(String gameId, String playerId, List<bool> board);
+  Future<void> deleteBoard(String gameId, String playerId);
 
   Future<List<ParseObject>> getChatMessages(String gameId);
   Future<void> deleteChatMessages(String gameId);

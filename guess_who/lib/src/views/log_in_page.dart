@@ -39,7 +39,7 @@ class _LogInPageState extends State<LogInPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Text('Log in with your email and password',
+                        child: Text('Log in with your username and password',
                             style: TextStyle(fontSize: 20),
                             textAlign: TextAlign.center),
                       ),

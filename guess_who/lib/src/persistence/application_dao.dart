@@ -116,24 +116,20 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
-  Future<Game?> seekGame(String playerId, bool type) async {
+  Future<Game?> seekGame(String playerId, bool type,
+      {Stream<bool>? cancellationToken}) async {
     await setSeekingGame(playerId, true);
 
-    QueryBuilder<ParseObject> queryPlayers =
-        QueryBuilder<ParseObject>(ParseObject('User'))
-          ..whereEqualTo('isSeekingGame', true)
-          ..whereNotEqualTo('objectId', playerId);
+    var players =
+        await findOtherPlayers(playerId, cancellationToken: cancellationToken);
 
-    final ParseResponse apiResponse = await queryPlayers.query();
-
-    if (apiResponse.results == null || apiResponse.results!.isEmpty) {
+    if (players.isEmpty) {
       print('No available players seeking game');
       return null;
     }
 
     try {
-      final Player otherPlayer =
-          Player.fromJson(apiResponse.results![0].toJson());
+      final Player otherPlayer = Player.fromJson(players[0].toJson());
 
       final List<Character> allCharacters = await getCharacters();
       allCharacters.shuffle();
@@ -147,17 +143,55 @@ class ApplicationDAO implements IApplicationDAO {
           player2Id: otherPlayer.getId(),
           character1Id: character1.getId(),
           character2Id: character2.getId());
-      await addGame(newGame);
+      final createdGame = await addGame(newGame);
+
+      final board1 = Board(
+          gameId: createdGame.getId(),
+          playerId: createdGame.getPlayer1Id(),
+          board: List.filled(16, true));
+      final board2 = Board(
+          gameId: createdGame.getId(),
+          playerId: createdGame.getPlayer2Id(),
+          board: List.filled(16, true));
+
+      await addBoard(board1);
+      await addBoard(board2);
 
       await setSeekingGame(playerId, false);
       await setSeekingGame(otherPlayer.getId(), false);
 
-      return newGame;
+      return createdGame;
     } catch (e) {
       print('Error seeking game for player with id $playerId');
       throw MatchmakingException(
           'Error seeking game for player with id $playerId');
     }
+  }
+
+  Future<List<Player>> findOtherPlayers(String currentPlayerId,
+      {Stream<bool>? cancellationToken}) async {
+    List<Player> players = [];
+
+    while (players.isEmpty) {
+      QueryBuilder<ParseObject> queryPlayers =
+          QueryBuilder<ParseObject>(ParseObject('User'))
+            ..whereEqualTo('isSeekingGame', true)
+            ..whereNotEqualTo('objectId', currentPlayerId);
+
+      final ParseResponse apiResponse = await queryPlayers.query();
+
+      if (apiResponse.results != null) {
+        for (var result in apiResponse.results!) {
+          players.add(Player.fromJson(result.toJson()));
+        }
+      }
+      if (await cancellationToken?.first ??
+          false || cancellationToken == null) {
+        break;
+      }
+      await Future.delayed(Duration(seconds: 1));
+    }
+    return players;
   }
 
   @override
@@ -189,13 +223,15 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
-  Future<void> addGame(Game game) async {
+  Future<Game> addGame(Game game) async {
     ParseObject parsePlayer1 = ParseObject('User')..objectId = game.player1Id;
     ParseObject parsePlayer2 = ParseObject('User')..objectId = game.player2Id;
     ParseObject parseCharacter1 = ParseObject('Character')
       ..objectId = game.character1Id;
     ParseObject parseCharacter2 = ParseObject('Character')
       ..objectId = game.character2Id;
+
+    Game createdGame;
 
     try {
       final ParseObject newGame = ParseObject('Game')
@@ -204,16 +240,18 @@ class ApplicationDAO implements IApplicationDAO {
         ..set('Player2', parsePlayer2)
         ..set('character_p1', parseCharacter1)
         ..set('character_p2', parseCharacter2);
-      await newGame.save();
+      final response = await newGame.save();
+      createdGame = Game.fromJson(response.results![0].toJson());
     } catch (e) {
       print('Error adding game');
       throw GameCreateException('Error adding game');
     }
+    return createdGame;
   }
 
   @override
-  Future<void> updateGame(String id, Player player) async {
-    ParseObject parsePlayer = ParseObject('User')..objectId = player.getId();
+  Future<void> updateGame(String id, String playerId) async {
+    ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
 
     try {
       final ParseObject updatedGame = ParseObject('Game')
@@ -256,6 +294,38 @@ class ApplicationDAO implements IApplicationDAO {
   }
 
   @override
+  Future<void> addBoard(Board board) async {
+    ParseObject parseGame = ParseObject('Game')..objectId = board.gameId;
+    ParseObject parsePlayer = ParseObject('User')..objectId = board.playerId;
+
+    try {
+      final ParseObject newBoard = ParseObject('Board')
+        ..set('game_id', parseGame)
+        ..set('player_id', parsePlayer)
+        ..set('ch0', board.board[0])
+        ..set('ch1', board.board[1])
+        ..set('ch2', board.board[2])
+        ..set('ch3', board.board[3])
+        ..set('ch4', board.board[4])
+        ..set('ch5', board.board[5])
+        ..set('ch6', board.board[6])
+        ..set('ch7', board.board[7])
+        ..set('ch8', board.board[8])
+        ..set('ch9', board.board[9])
+        ..set('ch10', board.board[10])
+        ..set('ch11', board.board[11])
+        ..set('ch12', board.board[12])
+        ..set('ch13', board.board[13])
+        ..set('ch14', board.board[14])
+        ..set('ch15', board.board[15]);
+      await newBoard.save();
+    } catch (e) {
+      print('Error adding board');
+      throw BoardCreateException('Error adding board');
+    }
+  }
+
+  @override
   Future<Board> getBoard(String gameId, String playerId) async {
     ParseObject parseGame = ParseObject('Game')..objectId = gameId;
     ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
@@ -268,6 +338,7 @@ class ApplicationDAO implements IApplicationDAO {
     final ParseResponse apiResponse = await queryBoard.query();
 
     try {
+      print('Response: ${apiResponse.results![0].toJson()}');
       final Board board = Board.fromJson(apiResponse.results![0].toJson());
       return board;
     } catch (e) {
@@ -304,6 +375,29 @@ class ApplicationDAO implements IApplicationDAO {
           'Board with gameId $gameId and playerId $playerId not found');
     }
   }
+
+  @override
+  Future<void> deleteBoard(String gameId, String playerId) async {
+    ParseObject parseGame = ParseObject('Game')..objectId = gameId;
+    ParseObject parsePlayer = ParseObject('User')..objectId = playerId;
+
+    QueryBuilder<ParseObject> queryBoard =
+        QueryBuilder<ParseObject>(ParseObject('Board'))
+          ..whereEqualTo('game_id', parseGame)
+          ..whereEqualTo('player_id', parsePlayer);
+
+    final ParseResponse apiResponse = await queryBoard.query();
+
+    if (apiResponse.results != null && apiResponse.results!.isNotEmpty) {
+      ParseObject boardToDelete = apiResponse.results!.first;
+      await boardToDelete.delete();
+    } else {
+      print('Board with gameId $gameId and playerId $playerId not found');
+      throw BoardNotFoundException(
+          'Board with gameId $gameId and playerId $playerId not found');
+    }
+  }
+
 
   @override
   Future<List<ParseObject>> getChatMessages(String gameId) async {
@@ -461,6 +555,20 @@ class ApplicationDAO implements IApplicationDAO {
     if (response.results != null && response.results!.isNotEmpty) {
       ParseObject character = response.results!.first;
       return character.get('name');
+    }
+    return null;
+  }
+
+  Future<int?> getCharacterIndexFromObjectId(String objectId) async {
+    QueryBuilder<ParseObject> queryCharacter =
+        QueryBuilder<ParseObject>(ParseObject('Character'))
+          ..whereEqualTo('objectId', objectId);
+
+    var response = await queryCharacter.query();
+
+    if (response.results != null && response.results!.isNotEmpty) {
+      ParseObject character = response.results!.first;
+      return character.get('index');
     }
     return null;
   }

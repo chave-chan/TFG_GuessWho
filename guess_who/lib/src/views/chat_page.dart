@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:guess_who/src/domain/game.dart';
 import 'package:guess_who/src/persistence/application_dao.dart';
 import 'package:guess_who/utils/theme.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 
 class ChatPage extends StatefulWidget {
-  ChatPage({super.key});
+  final Game game;
+  ChatPage({required this.game, super.key});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -15,14 +18,24 @@ class _ChatPageState extends State<ChatPage> {
   final messageTextController = TextEditingController();
   ParseUser? loggedInUser;
   String? messageText;
-  bool isUserTurn = true;
+  bool isUserTurn = false;
 
-  String gameId = 'I3HD80kryN';
+  late String gameId;
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
+    gameId = widget.game.getId();
+
+    widget.game.turnController.stream.listen((playerTurn) {
+      setState(() {
+        isUserTurn = (playerTurn &&
+                widget.game.getPlayer1Id() == loggedInUser!.objectId) ||
+            (!playerTurn &&
+                widget.game.getPlayer2Id() == loggedInUser!.objectId);
+      });
+    });
   }
 
   void getCurrentUser() async {
