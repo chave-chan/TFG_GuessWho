@@ -1,0 +1,388 @@
+@startuml
+set namespaceSeparator ::
+
+class "guess_who::utils::theme.dart::AppTheme" {
+  {static} +Color primary
+  {static} +Color secondary
+  {static} +Color backgroundLight
+  {static} +Color backgroundDark
+  {static} +Color gameMode1
+  {static} +Color gameMode2
+  {static} +Color gameMode3
+  {static} +ThemeData lightTheme
+  {static} +ThemeData darkTheme
+}
+
+"guess_who::utils::theme.dart::AppTheme" o-- "dart::ui::Color"
+"guess_who::utils::theme.dart::AppTheme" o-- "flutter::src::material::theme_data.dart::ThemeData"
+
+class "guess_who::main.dart::GuessWho" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::main.dart::GuessWho"
+
+class "guess_who::src::persistence::application_dao.dart::ApplicationDAO" {
+  +Future<bool> hasUserLogged()
+  +Future<ParseUser?> getCurrentUser()
+  +Future<List<Player>> getPlayers()
+  +Future<Player> getPlayer()
+  +Future<Player> getPlayerByEmail()
+  +Future<int> getPlayerWins()
+  +Future<void> deletePlayer()
+  +Future<void> setSeekingGame()
+  +Future<Game?> seekGame()
+  +Future<List<Player>> findOtherPlayers()
+  +Future<List<Game>> getGames()
+  +Future<Game> getGame()
+  +Future<Game> addGame()
+  +Future<void> updateGame()
+  +Future<List<Character>> getCharacters()
+  +Future<Character> getCharacter()
+  +Future<void> addBoard()
+  +Future<Board> getBoard()
+  +Future<void> updateBoard()
+  +Future<void> deleteBoard()
+  +Future<List<ParseObject>> getChatMessages()
+  +Future<void> deleteChatMessages()
+  +Future<Map<String, int>> getRanking()
+  +Future<int> getRank()
+  +Future<Map<String, int>> getWinsPerPlayer()
+  +Map<String, int> sortRanking()
+  +Future<String?> getUsernameFromObjectId()
+  +Future<String?> getObjectIdFromUsername()
+  +Future<String?> getNameFromObjectId()
+  +Future<int?> getCharacterIndexFromObjectId()
+}
+
+"guess_who::src::application::application_dao.dart::IApplicationDAO" <|-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+
+class "guess_who::src::application::exceptions::exceptions.dart" {
+  +String message
+}
+
+"dart::core::Exception" <|-- "guess_who::src::application::exceptions::exceptions.dart"
+
+
+abstract class "guess_who::src::application::application_dao.dart::IApplicationDAO" {
+  +Future<bool> hasUserLogged()
+  +Future<ParseUser?> getCurrentUser()
+  +Future<List<Player>> getPlayers()
+  +Future<Player> getPlayer()
+  +Future<Player> getPlayerByEmail()
+  +Future<int> getPlayerWins()
+  +Future<void> deletePlayer()
+  +Future<void> setSeekingGame()
+  +Future<Game?> seekGame()
+  +Future<List<Game>> getGames()
+  +Future<Game> getGame()
+  +Future<Game> addGame()
+  +Future<void> updateGame()
+  +Future<List<Character>> getCharacters()
+  +Future<Character> getCharacter()
+  +Future<void> addBoard()
+  +Future<Board> getBoard()
+  +Future<void> updateBoard()
+  +Future<void> deleteBoard()
+  +Future<List<ParseObject>> getChatMessages()
+  +Future<void> deleteChatMessages()
+  +Future<Map<String, int>> getRanking()
+  +Future<int> getRank()
+}
+
+class "guess_who::src::views::chat_page.dart::ChatPage" {
+  +Game game
+  +State<ChatPage> createState()
+}
+
+"guess_who::src::views::chat_page.dart::ChatPage" o-- "guess_who::src::domain::game.dart::Game"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::chat_page.dart::ChatPage"
+
+class "guess_who::src::views::chat_page.dart::_ChatPageState" {
+  +ApplicationDAO applicationDAO
+  +TextEditingController messageTextController
+  +ParseUser? loggedInUser
+  +String? messageText
+  +bool isUserTurn
+  +String gameId
+  +void initState()
+  +void getCurrentUser()
+  +Widget build()
+  +Widget buildTextInput()
+  +Widget buildYesNoButtons()
+  +Future<void> sendMessage()
+  +Future<void> sendYesNoMessage()
+}
+
+"guess_who::src::views::chat_page.dart::_ChatPageState" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"guess_who::src::views::chat_page.dart::_ChatPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"guess_who::src::views::chat_page.dart::_ChatPageState" o-- "parse_server_sdk::parse_server_sdk.dart::ParseUser"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::chat_page.dart::_ChatPageState"
+
+class "guess_who::src::views::sign_in_page.dart::SignInPage" {
+  +ApplicationDAO applicationDAO
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _usernameController
+  -TextEditingController _emailController
+  -TextEditingController _passwordController
+  +Widget build()
+  +void userRegistration()
+}
+
+"guess_who::src::views::sign_in_page.dart::SignInPage" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"guess_who::src::views::sign_in_page.dart::SignInPage" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"guess_who::src::views::sign_in_page.dart::SignInPage" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::src::views::sign_in_page.dart::SignInPage"
+
+class "guess_who::src::views::log_in_page.dart::LogInPage" {
+  +_LogInPageState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::log_in_page.dart::LogInPage"
+
+class "guess_who::src::views::log_in_page.dart::_LogInPageState" {
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _usernameController
+  -TextEditingController _passwordController
+  +bool isLoggedIn
+  +Widget build()
+  +void userLogIn()
+}
+
+"guess_who::src::views::log_in_page.dart::_LogInPageState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"guess_who::src::views::log_in_page.dart::_LogInPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::log_in_page.dart::_LogInPageState"
+
+class "guess_who::src::views::instructions_page.dart::InstructionsPage" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::src::views::instructions_page.dart::InstructionsPage"
+
+class "guess_who::src::views::ranking_page.dart::RankingPage" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::src::views::ranking_page.dart::RankingPage"
+
+class "guess_who::src::views::ranking_page.dart::RankingList" {
+  +State<RankingList> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::ranking_page.dart::RankingList"
+
+class "guess_who::src::views::ranking_page.dart::_RankingListState" {
+  +ApplicationDAO applicationDAO
+  +Future<Map<String, int>> futureRanking
+  +void initState()
+  +Widget build()
+}
+
+"guess_who::src::views::ranking_page.dart::_RankingListState" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::ranking_page.dart::_RankingListState"
+
+class "guess_who::src::views::home_page.dart::HomePage" {
+  +State<HomePage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::home_page.dart::HomePage"
+
+class "guess_who::src::views::home_page.dart::_HomePageState" {
+  +ApplicationDAO applicationDAO
+  +CancelableOperation<Game?>? searchGameOperation
+  +ParseUser? loggedInUser
+  +bool isWaiting
+  +String message
+  +Game testGame
+  +void initState()
+  +void getTestGame()
+  +void getCurrentUser()
+  +void searchGame()
+  +void cancelGameSearch()
+  +Widget build()
+}
+
+"guess_who::src::views::home_page.dart::_HomePageState" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"guess_who::src::views::home_page.dart::_HomePageState" o-- "async::src::cancelable_operation.dart::CancelableOperation<Game>"
+"guess_who::src::views::home_page.dart::_HomePageState" o-- "parse_server_sdk::parse_server_sdk.dart::ParseUser"
+"guess_who::src::views::home_page.dart::_HomePageState" o-- "guess_who::src::domain::game.dart::Game"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::home_page.dart::_HomePageState"
+
+class "guess_who::src::views::settings_page.dart::SettingsPage" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::src::views::settings_page.dart::SettingsPage"
+
+class "guess_who::src::views::game_page.dart::GamePage" {
+  +Game game
+  +State<GamePage> createState()
+}
+
+"guess_who::src::views::game_page.dart::GamePage" o-- "guess_who::src::domain::game.dart::Game"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::game_page.dart::GamePage"
+
+class "guess_who::src::views::game_page.dart::_GamePageState" {
+  +ApplicationDAO applicationDAO
+  +ParseUser? loggedInUser
+  +StreamSubscription<dynamic>? timerSubscription
+  +StreamSubscription<dynamic>? turnSubscription
+  +String? selectedCharacter
+  +int? selectedCharacterIndex
+  +String timer
+  +bool isUserTurn
+  +bool guessMode
+  +List<Character> characters
+  +List<bool> boardState
+  +String gameId
+  +String otherPlayer
+  +String username
+  +String character
+  +int characterIndex
+  +void initState()
+  +void getCurrentUser()
+  +void getCharacters()
+  +void listenTimeChange()
+  +void listenTurnChange()
+  +void makeGuess()
+  +void dispose()
+  -Future<void> _showCharacterDialog()
+  -void _showWinnerDialog()
+  +Widget build()
+}
+
+"guess_who::src::views::game_page.dart::_GamePageState" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"guess_who::src::views::game_page.dart::_GamePageState" o-- "parse_server_sdk::parse_server_sdk.dart::ParseUser"
+"guess_who::src::views::game_page.dart::_GamePageState" o-- "dart::async::StreamSubscription<dynamic>"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::game_page.dart::_GamePageState"
+
+class "guess_who::src::views::widgets::buttons.dart" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "guess_who::src::views::widgets::buttons.dart"
+
+class "guess_who::src::views::profile_page.dart::ProfilePage" {
+  +_ProfilePageState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "guess_who::src::views::profile_page.dart::ProfilePage"
+
+class "guess_who::src::views::profile_page.dart::_ProfilePageState" {
+  +ApplicationDAO applicationDAO
+  +Future<ParseUser?> futureCurrentUser
+  +int wins
+  +int rank
+  +bool isLoggedIn
+  +void initState()
+  +Widget build()
+  +void loadPlayerWins()
+  +void loadPlayerRank()
+  +void userLogOut()
+}
+
+"guess_who::src::views::profile_page.dart::_ProfilePageState" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"flutter::src::widgets::framework.dart::State" <|-- "guess_who::src::views::profile_page.dart::_ProfilePageState"
+
+class "guess_who::src::domain::game.dart::Game" {
+  +ApplicationDAO applicationDAO
+  +bool type
+  +String id
+  +String player1Id
+  +String player2Id
+  +String character1Id
+  +String character2Id
+  +String? winnerId
+  +String player1Username
+  +String player2Username
+  +String character1Name
+  +String character2Name
+  +String winnerUsername
+  +int character1Index
+  +int character2Index
+  +List<bool> board
+  +Timer? timer
+  +StreamController<Duration> timerController
+  +StreamController<bool> turnController
+  +bool player1Turn
+  +Map<String, dynamic> toJson()
+  +void dispose()
+  +Future<void> updateBoard()
+  +void startTurn()
+  +void endTurn()
+  +void switchTurn()
+  +Future<void> getInfo()
+  +void endGame()
+  +String toString()
+  +String getId()
+  +bool getType()
+  +String getPlayer1Id()
+  +String getPlayer1Username()
+  +String getPlayer2Id()
+  +String getPlayer2Username()
+  +String getCharacter1Id()
+  +String getCharacter1Name()
+  +int getCharacter1Index()
+  +String getCharacter2Id()
+  +String getCharacter2Name()
+  +int getCharacter2Index()
+  +String? getWinnerId()
+  +String? getWinnerUsername()
+  +dynamic setId()
+  +dynamic setType()
+  +dynamic setPlayer1Id()
+  +dynamic setPlayer2Id()
+  +dynamic setCharacter1Id()
+  +dynamic setCharacter2Id()
+  +dynamic setWinnerId()
+}
+
+"guess_who::src::domain::game.dart::Game" o-- "guess_who::src::persistence::application_dao.dart::ApplicationDAO"
+"guess_who::src::domain::game.dart::Game" o-- "dart::async::Timer"
+"guess_who::src::domain::game.dart::Game" o-- "dart::async::StreamController<Duration>"
+"guess_who::src::domain::game.dart::Game" o-- "dart::async::StreamController<bool>"
+
+class "guess_who::src::domain::player.dart::Player" {
+  +String id
+  +String username
+  +String email
+  +Map<String, dynamic> toJson()
+  +String toString()
+  +String getId()
+  +String getPlayername()
+  +String getEmail()
+  +dynamic setId()
+  +dynamic setPlayername()
+  +dynamic setEmail()
+}
+
+class "guess_who::src::domain::board.dart::Board" {
+  +String gameId
+  +String playerId
+  +List<bool> board
+  +Map<String, dynamic> toJson()
+  +void resetBoard()
+  +void changeState()
+  +bool getState()
+  +String getGameId()
+  +String getPlayerId()
+  +String setGameId()
+  +String setPlayerId()
+}
+
+class "guess_who::src::domain::character.dart::Character" {
+  +String id
+  +String name
+  +int index
+  +Map<String, dynamic> toJson()
+  +String toString()
+  +String getId()
+  +String getPlayername()
+  +int getIndex()
+  +dynamic setId()
+  +dynamic setPlayername()
+  +dynamic setIndex()
+}
+
+
+@enduml

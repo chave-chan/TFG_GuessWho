@@ -193,10 +193,10 @@ class _HomePageState extends State<HomePage> {
                           duration: Duration(seconds: 1)));
                       */
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => GamePage(game: testGame)),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => GamePage(game: testGame)),
+                          );
                     },
                   ),
                   SizedBox(width: 72),

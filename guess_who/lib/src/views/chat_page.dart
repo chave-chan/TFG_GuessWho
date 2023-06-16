@@ -18,7 +18,7 @@ class _ChatPageState extends State<ChatPage> {
   final messageTextController = TextEditingController();
   ParseUser? loggedInUser;
   String? messageText;
-  bool isUserTurn = false;
+  bool isUserTurn = true;
 
   late String gameId;
 

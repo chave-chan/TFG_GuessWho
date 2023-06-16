@@ -361,16 +361,12 @@ class _GamePageState extends State<GamePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(width: 120),
-                Image.asset('lib/assets/images/Bill.jpg',
-                    height: 95, width: 95),
-                /*
                 Image.asset(
                     loggedInUser!.objectId == widget.game.getPlayer1Id()
                         ? 'lib/assets/images/ch${widget.game.getCharacter1Index()}.png'
                         : 'lib/assets/images/ch${widget.game.getCharacter2Index()}.png',
                     height: 95,
                     width: 95),
-                    */
                 SizedBox(width: 16),
                 Text(character, style: TextStyle(fontSize: 28)),
               ],
